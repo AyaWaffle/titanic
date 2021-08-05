@@ -3,11 +3,10 @@ import plotly.express as px
 import pandas as pd
 import logging
 from sklearn.metrics import accuracy_score
-# from dtreeviz.trees import dtreeviz
+import seaborn as sns
 from sklearn.tree import DecisionTreeClassifier
-from dtreeviz.trees import dtreeviz
-import streamlit.components.v1 as components
-import graphviz as graphviz
+import data
+
 
 st.set_page_config(
     # page_title="PE Score Analysis App",
@@ -78,12 +77,16 @@ def main():
 
 
     # --- page選択ラジオボタン
-    page = st.sidebar.radio('ページ選択', ('データ加工', 'データ可視化', '決定木'))
+    st.sidebar.markdown('## ページを選択')
+    page = st.sidebar.radio('', ('データ加工', 'データ可視化', 'テストデータ', '決定木'))
     if page == 'データ加工':
         st.session_state.page = 'deal_data'
         logging.info(',%s,ページ選択,%s', st.session_state.username, page)
     elif page == 'データ可視化':
         st.session_state.page = 'vis'
+        logging.info(',%s,ページ選択,%s', st.session_state.username, page)
+    elif page == 'テストデータ':
+        st.session_state.page = 'test'
         logging.info(',%s,ページ選択,%s', st.session_state.username, page)
     elif page == '決定木':
         st.session_state.page = 'decision_tree'
@@ -95,10 +98,13 @@ def main():
     elif st.session_state.page == 'deal_data':
         deal_data()
     elif st.session_state.page == 'vis':
-        vis()        
+        vis()
+    elif st.session_state.page == 'test':
+        test()  
     elif st.session_state.page == 'decision_tree':
         decision_tree()        
 
+# ---------------- usernameの登録 ----------------------------------
 def input_name():
     # Input username
     with st.form("my_form"):
@@ -112,11 +118,22 @@ def input_name():
             st.session_state.username = inputname
             st.session_state.page = 'deal_data'
             st.write("名前: ", inputname)
-    
+
+# ---------------- 訓練データの加工 ----------------------------------
 def deal_data():
     st.title("deal_data")
 
-# ---------------- 可視化 :  各グラフを選択する ----------------------------------
+# ---------------- テストデータ　プロット ----------------------------------
+def test():
+    st.title('テストデータ')
+
+    feature_data = load_num_data()
+    full_data = load_full_data()
+    label = feature_data.columns
+
+
+
+# ---------------- 決定木 : dtreeviz ----------------------------------
 def decision_tree():
     st.title("生存できるか予測しよう")
     
@@ -149,7 +166,8 @@ def decision_tree():
 
     st.write(f'accuracy: {acc:.5f}')
 
-    vis_tree = st.button('決定木をみてみる')
+    tree = data.my_dtree(feature1, feature2)
+    st.image(tree, caption=feature1+'_'+feature2)
 
     # if vis_tree:
     #     viz = dtreeviz(
@@ -162,17 +180,17 @@ def decision_tree():
     #         ) 
 
     #     viz.view()
-    st.set_option('deprecation.showPyplotGlobalUse', False)
+    # st.set_option('deprecation.showPyplotGlobalUse', False)
 
-    viz = dtreeviz(
-                clf,
-                train_X, 
-                train_y,
-                target_name='Survived',
-                feature_names=train_X.columns,
-                class_names=['Alive', 'Dead'],
-            ) 
-    st.write("viz OK")
+    # viz = dtreeviz(
+    #             clf,
+    #             train_X, 
+    #             train_y,
+    #             target_name='Survived',
+    #             feature_names=train_X.columns,
+    #             class_names=['Alive', 'Dead'],
+    #         ) 
+    # st.write("viz OK")
 
     # viz.view()
     # st.image(viz._repr_svg_(), use_column_width=True)
@@ -182,11 +200,7 @@ def decision_tree():
 
     # st_dtree(viz, 800)
     # st.write('end of code')
-    st.image(viz._repr_svg_(), use_column_width=True)
-
-
-
-
+    # st.image(viz._repr_svg_(), use_column_width=True)
 
 # ---------------- 可視化 :  各グラフを選択する ----------------------------------
 def vis():
@@ -196,35 +210,102 @@ def vis():
     full_data = load_full_data()
     label = feature_data.columns
 
-    st.sidebar.markdown('## いろんなグラフを試してみよう')
+    st.sidebar.markdown('## 様々なグラフを試してみよう')
 
     # sidebar でグラフを選択
     graph = st.sidebar.radio(
         'グラフの種類',
-        ('棒グラフ', 'ヒストグラム', '箱ひげ図')
+        ('棒グラフ', '棒グラフ(色分けあり)', '箱ひげ図', '散布図')
     )
 
     # 棒グラフ
-    if graph == '棒グラフ':
-        bar_val = st.selectbox('変数を選択',label)
-        st.write('生存率と他の変数の関係を調べてみましょう')
-        fig = px.bar(full_data, x=bar_val, y='Survived')
-        st.plotly_chart(fig, use_container_width=True)
+    # if graph == '棒グラフ':
+    #     bar_val = st.selectbox('変数を選択',label)
+    #     st.write('生存率と他の変数の関係を調べてみましょう')
+    #     fig = px.bar(full_data, x=bar_val, y='Survived')
+    #     st.plotly_chart(fig, use_container_width=True)
 
 
-    # ヒストグラム
-    elif graph == "ヒストグラム":
-        hist_val = st.selectbox('変数を選択',label)
-        fig = px.histogram(feature_data, x=hist_val)
-        st.plotly_chart(fig, use_container_width=True)
+    # 棒グラフ
+    if graph == "棒グラフ":
+        st.markdown('## 生存率と他の変数の関係を調べてみる')
+        with st.form("棒グラフ"):
+            # 変数選択
+            hist_val = st.selectbox('変数を選択',label)
+
+            # Submitボタン
+            plot_button = st.form_submit_button('グラフ表示')
+            if plot_button:
+                g = sns.factorplot(data = full_data, x = hist_val, y = 'Survived', kind = 'bar',  ci=None)
+                st.pyplot(g)
+                # コードの表示
+                code = st.sidebar.checkbox('コードを表示')
+                if code:
+                    code_txt = "sns.factorplot(data=full_data, x='" + hist_val + "', y='Survived', kind='bar',  ci=None)"
+                    st.sidebar.write(code_txt)
+
+    # 棒グラフ: Hue あり
+    elif graph == "棒グラフ(色分けあり)":
+        label = ['Pclass', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked']
+        st.markdown('## 生存率と他の変数の関係を調べてみる')
+        st.write('性別ごとの分類あり')
+        with st.form("棒グラフ(色分けあり)"):
+            # 変数選択
+            hist_val = st.selectbox('変数を選択',label)
+            df = full_data
+
+            # Submitボタン
+            plot_button = st.form_submit_button('グラフ表示')
+            if plot_button:
+                g = sns.factorplot(data = full_data, x = hist_val, y = 'Survived', hue = 'Sex', kind = 'bar',  ci=None)
+                st.pyplot(g)
+                # コードの表示
+                code = st.sidebar.checkbox('コードを表示')
+                if code:
+                    code_txt = "sns.factorplot(data=full_data, x='" + hist_val + "', y='Survived', hue='Sex', kind='bar',  ci=None)"
+                    st.sidebar.write(code_txt)
     
     # 箱ひげ図
     elif graph == '箱ひげ図':
-        box_val_y = st.selectbox('箱ひげ図にする変数を選択',label)
+        st.markdown('## 各変数の分布を箱ひげ図を用いて調べる')
+        with st.form("箱ひげ図"):
+            # 変数選択
+            box_val_y = st.selectbox('箱ひげ図にする変数を選択',label)
 
-        fig = px.box(full_data, x='Survived', y=box_val_y )
-        st.plotly_chart(fig, use_container_width=True)
+            # Submitボタン
+            plot_button = st.form_submit_button('グラフ表示')
+            if plot_button:
+                # 箱ひげ図の表示
+                fig = px.box(full_data, x='Survived', y=box_val_y )
+                st.plotly_chart(fig, use_container_width=True)
+                # コードの表示
+                code = st.sidebar.checkbox('コードを表示')
+                if code:
+                    code_txt = "fig = px.box(full_data, x='Survived', y='" + box_val_y + "' )"
+                    st.sidebar.write(code_txt)
+    
+    # 散布図
+    elif graph == '散布図':
+        st.markdown('## 各変数の分布を散布図を用いて調べる')
+        with st.form("散布図"):
+            left, right = st.beta_columns(2)
 
-      
+            with left: # 変数選択 
+                x_label = st.selectbox('横軸を選択',label)
 
+            with right:
+                y_label = st.selectbox('縦軸を選択',label)
+        
+            # Submitボタン
+            plot_button = st.form_submit_button('グラフ表示')
+            if plot_button:
+                # 散布図表示
+                fig = px.scatter(full_data,x=x_label,y=y_label)
+                st.plotly_chart(fig, use_container_width=True)
+                # コードの表示
+                code = st.sidebar.checkbox('コードを表示')
+                if code:
+                    code_txt = "fig = px.scatter(full_data,x='" + x_label + "',y='" + y_label + "')"
+                    st.sidebar.write(code_txt)
+ 
 main()
