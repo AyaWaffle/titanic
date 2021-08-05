@@ -176,13 +176,13 @@ def decision_tree():
 
     # viz.view()
     # st.image(viz._repr_svg_(), use_column_width=True)
-    def st_dtree(viz, height=None):
-        dtree_html = f"<body>{viz.svg()}</body>"
-        components.html(dtree_html, height=height)
+    # def st_dtree(viz, height=None):
+    #     dtree_html = f"<body>{viz.svg()}</body>"
+    #     components.html(dtree_html, height=height)
 
-    st_dtree(viz, 800)
-    st.write('end of code')
-
+    # st_dtree(viz, 800)
+    # st.write('end of code')
+    st.image(viz._repr_svg_(), use_column_width=True)
 
 
 
