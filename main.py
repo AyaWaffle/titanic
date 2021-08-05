@@ -238,11 +238,11 @@ def vis():
             if plot_button:
                 g = sns.factorplot(data = full_data, x = hist_val, y = 'Survived', kind = 'bar',  ci=None)
                 st.pyplot(g)
-                # コードの表示
-                code = st.sidebar.checkbox('コードを表示')
-                if code:
-                    code_txt = "sns.factorplot(data=full_data, x='" + hist_val + "', y='Survived', kind='bar',  ci=None)"
-                    st.sidebar.write(code_txt)
+        # コードの表示
+        code = st.sidebar.checkbox('コードを表示')
+        if code:
+            code_txt = "sns.factorplot(data=full_data, x='" + hist_val + "', y='Survived', kind='bar',  ci=None)"
+            st.sidebar.write(code_txt)
 
     # 棒グラフ: Hue あり
     elif graph == "棒グラフ(色分けあり)":
@@ -259,11 +259,11 @@ def vis():
             if plot_button:
                 g = sns.factorplot(data = full_data, x = hist_val, y = 'Survived', hue = 'Sex', kind = 'bar',  ci=None)
                 st.pyplot(g)
-                # コードの表示
-                code = st.sidebar.checkbox('コードを表示')
-                if code:
-                    code_txt = "sns.factorplot(data=full_data, x='" + hist_val + "', y='Survived', hue='Sex', kind='bar',  ci=None)"
-                    st.sidebar.write(code_txt)
+        # コードの表示
+        code = st.sidebar.checkbox('コードを表示')
+        if code:
+            code_txt = "sns.factorplot(data=full_data, x='" + hist_val + "', y='Survived', hue='Sex', kind='bar',  ci=None)"
+            st.sidebar.write(code_txt)
     
     # 箱ひげ図
     elif graph == '箱ひげ図':
@@ -279,10 +279,10 @@ def vis():
                 fig = px.box(full_data, x='Survived', y=box_val_y )
                 st.plotly_chart(fig, use_container_width=True)
                 # コードの表示
-                code = st.sidebar.checkbox('コードを表示')
-                if code:
-                    code_txt = "fig = px.box(full_data, x='Survived', y='" + box_val_y + "' )"
-                    st.sidebar.write(code_txt)
+        code = st.sidebar.checkbox('コードを表示')
+        if code:
+            code_txt = "fig = px.box(full_data, x='Survived', y='" + box_val_y + "' )"
+            st.sidebar.write(code_txt)
     
     # 散布図
     elif graph == '散布図':
@@ -302,10 +302,10 @@ def vis():
                 # 散布図表示
                 fig = px.scatter(full_data,x=x_label,y=y_label)
                 st.plotly_chart(fig, use_container_width=True)
-                # コードの表示
-                code = st.sidebar.checkbox('コードを表示')
-                if code:
-                    code_txt = "fig = px.scatter(full_data,x='" + x_label + "',y='" + y_label + "')"
-                    st.sidebar.write(code_txt)
+        # コードの表示
+        code = st.sidebar.checkbox('コードを表示')
+        if code:
+            code_txt = "fig = px.scatter(full_data,x='" + x_label + "',y='" + y_label + "')"
+            st.sidebar.write(code_txt)
  
 main()
