@@ -242,7 +242,9 @@ def vis():
         code = st.sidebar.checkbox('コードを表示')
         if code:
             code_txt = "sns.factorplot(data=full_data, x='" + hist_val + "', y='Survived', kind='bar',  ci=None)"
+            st.sidebar.markdown('---')
             st.sidebar.write(code_txt)
+            st.sidebar.markdown('---')
 
     # 棒グラフ: Hue あり
     elif graph == "棒グラフ(色分けあり)":
@@ -263,7 +265,9 @@ def vis():
         code = st.sidebar.checkbox('コードを表示')
         if code:
             code_txt = "sns.factorplot(data=full_data, x='" + hist_val + "', y='Survived', hue='Sex', kind='bar',  ci=None)"
+            st.sidebar.markdown('---')
             st.sidebar.write(code_txt)
+            st.sidebar.markdown('---')
     
     # 箱ひげ図
     elif graph == '箱ひげ図':
@@ -282,7 +286,9 @@ def vis():
         code = st.sidebar.checkbox('コードを表示')
         if code:
             code_txt = "fig = px.box(full_data, x='Survived', y='" + box_val_y + "' )"
-            st.sidebar.write(code_txt)
+            st.sidebar.markdown('---')
+            st.sidebar.markdown(code_txt)
+            st.sidebar.markdown('---')
     
     # 散布図
     elif graph == '散布図':
@@ -306,6 +312,8 @@ def vis():
         code = st.sidebar.checkbox('コードを表示')
         if code:
             code_txt = "fig = px.scatter(full_data,x='" + x_label + "',y='" + y_label + "')"
+            st.sidebar.markdown('---')
             st.sidebar.write(code_txt)
+            st.sidebar.markdown('---')
  
 main()
