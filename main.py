@@ -6,6 +6,7 @@ from sklearn.metrics import accuracy_score
 import seaborn as sns
 from sklearn.tree import DecisionTreeClassifier
 import data
+import time
 
 
 st.set_page_config(
@@ -131,6 +132,40 @@ def test():
     full_data = load_full_data()
     label = feature_data.columns
 
+    # テストデータを取得
+    full_data = load_full_data()
+    test_num = 200
+    # test_numまでがテストデータ = 分割後もindexが揃う
+    train = full_data[test_num:]
+    # test_num以降が訓練データ
+    test = full_data[:test_num]
+    train.drop('Survived', axis=1) 
+    
+    test_idx = st.number_input("データ番号を入力", min_value=0, max_value=200)
+    test_df = full_data[test_idx: test_idx+1]
+    # 学習
+    # ここでは決定木を用います
+    clf = DecisionTreeClassifier(random_state=0, max_depth=3)
+    train_X = train.drop('Survived', axis=1)
+    train_y = train.Survived
+    clf = clf.fit(train_X, train_y)
+    # コンピューターの予測結果  # 1が生存、0が死亡
+    pred = clf.predict(test_df.drop('Survived', axis=1))
+    st.write('\n予測結果は...')
+    if pred[0] == 1:
+        st.write('生存！！')
+    else:
+        st.write('亡くなってしまうかも...')
+
+    ans = st.button('正解をみる')
+    if ans:
+        st.write('\n実際は...')
+        if test['Survived'][test_idx] == 1:
+            st.write('生存！！')
+        else:
+            st.write('亡くなってしまった...')
+
+        test[test_idx: test_idx+1]
 
 
 # ---------------- 決定木 : dtreeviz ----------------------------------
@@ -166,6 +201,11 @@ def decision_tree():
 
     st.success('学習終了！！')
     st.write(f'accuracy: {acc:.5f}')
+
+    #　決定木の表示までにタイムラグがほしい
+    # 待たせられる
+    with st.spinner('Wait for it...'):
+        time.sleep(3.5)
 
     # 決定木の可視化
     tree = data.my_dtree(feature1, feature2)
