@@ -139,12 +139,14 @@ def decision_tree():
     
     st.write('予測に使う変数を2つ選ぼう')
     left, right = st.beta_columns(2)
-    features = ['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare','Embarked']
+    features = ['Pclass', 'Gender', 'Age', 'SibSp', 'Parch', 'Fare','Embarked']
     with left:
         feature1 = st.selectbox('予測に使う変数1',features)
     with right:
         feature2 = st.selectbox('予測に使う変数2',features)
 
+    logging.info(',%s,決定木変数,%s', st.session_state.username, feature1+'_'+feature2)
+    # 学習スタート
     started = st.button('学習スタート')
     if not started: 
         st.stop()
@@ -232,16 +234,20 @@ def vis():
         with st.form("棒グラフ"):
             # 変数選択
             hist_val = st.selectbox('変数を選択',label)
+            logging.info(',%s,棒グラフ,%s', st.session_state.username, hist_val)
+
 
             # Submitボタン
             plot_button = st.form_submit_button('グラフ表示')
             if plot_button:
-                g = sns.factorplot(data = full_data, x = hist_val, y = 'Survived', kind = 'bar',  ci=None)
+                g = sns.catplot(x=hist_val, y='Survived', data=full_data, kind='bar', ci=None)
+                g = g.set_ylabels("survival probability")
+                # g = sns.factorplot(data = full_data, x = hist_val, y = 'Survived', kind = 'bar',  ci=None)
                 st.pyplot(g)
         # コードの表示
         code = st.sidebar.checkbox('コードを表示')
         if code:
-            code_txt = "sns.factorplot(data=full_data, x='" + hist_val + "', y='Survived', kind='bar',  ci=None)"
+            code_txt = "g = sns.catplot(x='" + hist_val + "', y='Survived', kind='bar', data=full_data, ci=None)"
             st.sidebar.markdown('---')
             st.sidebar.write(code_txt)
             st.sidebar.markdown('---')
@@ -254,17 +260,18 @@ def vis():
         with st.form("棒グラフ(色分けあり)"):
             # 変数選択
             hist_val = st.selectbox('変数を選択',label)
-            df = full_data
+            logging.info(',%s,棒グラフ(色分けあり),%s', st.session_state.username, hist_val)
 
             # Submitボタン
             plot_button = st.form_submit_button('グラフ表示')
             if plot_button:
-                g = sns.factorplot(data = full_data, x = hist_val, y = 'Survived', hue = 'Sex', kind = 'bar',  ci=None)
+                g = sns.catplot(x=hist_val, y='Survived', data=full_data, hue='Gender', kind='bar', ci=None)
+                # g = g.set_ylabels("survival probability")
                 st.pyplot(g)
         # コードの表示
         code = st.sidebar.checkbox('コードを表示')
         if code:
-            code_txt = "sns.factorplot(data=full_data, x='" + hist_val + "', y='Survived', hue='Sex', kind='bar',  ci=None)"
+            code_txt = "g = sns.catplot(x='" + hist_val + "', y='Survived', hue='Gender', data=full_data, kind='bar',  ci=None)"
             st.sidebar.markdown('---')
             st.sidebar.write(code_txt)
             st.sidebar.markdown('---')
@@ -275,23 +282,26 @@ def vis():
         with st.form("箱ひげ図"):
             # 変数選択
             box_val_y = st.selectbox('箱ひげ図にする変数を選択',label)
+            logging.info(',%s,箱ひげ図,%s', st.session_state.username, box_val_y)
+
 
             # Submitボタン
             plot_button = st.form_submit_button('グラフ表示')
             if plot_button:
                 # 箱ひげ図の表示
-                fig = px.box(full_data, x='Survived', y=box_val_y )
-                st.plotly_chart(fig, use_container_width=True)
+                g = sns.catplot(x='Survived', y=box_val_y, data=full_data, kind='box')
+                st.pyplot(g)
                 # コードの表示
         code = st.sidebar.checkbox('コードを表示')
         if code:
-            code_txt = "fig = px.box(full_data, x='Survived', y='" + box_val_y + "' )"
+            code_txt = "g = sns.catplot(x='Survived', y='" + box_val_y + "', data=full_data, kind='box')"
             st.sidebar.markdown('---')
             st.sidebar.markdown(code_txt)
             st.sidebar.markdown('---')
     
     # 散布図
     elif graph == '散布図':
+        label = full_data.columns
         st.markdown('## 各変数の分布を散布図を用いて調べる')
         with st.form("散布図"):
             left, right = st.beta_columns(2)
@@ -301,17 +311,23 @@ def vis():
 
             with right:
                 y_label = st.selectbox('縦軸を選択',label)
+            
+            logging.info(',%s,散布図,%s', st.session_state.username, x_label+'_'+y_label)
+            
         
             # Submitボタン
             plot_button = st.form_submit_button('グラフ表示')
             if plot_button:
                 # 散布図表示
-                fig = px.scatter(full_data,x=x_label,y=y_label)
-                st.plotly_chart(fig, use_container_width=True)
+                # fig = px.scatter(full_data,x=x_label,y=y_label)
+                # st.plotly_chart(fig, use_container_width=True)
+                g = sns.catplot(x=x_label, y=y_label, data=full_data, kind = 'swarm')
+                st.pyplot(g)
+
         # コードの表示
         code = st.sidebar.checkbox('コードを表示')
         if code:
-            code_txt = "fig = px.scatter(full_data,x='" + x_label + "',y='" + y_label + "')"
+            code_txt = "g = sns.catplot(x='" +  x_label + "', y='" + y_label + "', data=full_data, kind = 'swarm')"
             st.sidebar.markdown('---')
             st.sidebar.write(code_txt)
             st.sidebar.markdown('---')
