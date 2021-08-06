@@ -165,9 +165,9 @@ def decision_tree():
     acc = accuracy_score(pred, test_y)
 
     st.success('学習終了！！')
-
     st.write(f'accuracy: {acc:.5f}')
 
+    # 決定木の可視化
     tree = data.my_dtree(feature1, feature2)
     st.image(tree, caption=feature1+'_'+feature2)
 
