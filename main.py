@@ -13,7 +13,7 @@ st.set_page_config(
     # page_title="PE Score Analysis App",
     # page_icon="🧊",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
     )
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s,%(message)s")
@@ -65,33 +65,33 @@ def load_ML_data(feature1, feature2, train_num = 600):
 
 def main():
     # # If username is already initialized, don't do anything
-    # if 'username' not in st.session_state or st.session_state.username == 'default':
-    #     st.session_state.username = 'default'
-    #     input_name()
-    #     st.stop()
+    if 'username' not in st.session_state or st.session_state.username == 'default':
+        st.session_state.username = 'default'
+        input_name()
+        st.stop()
     if 'username' not in st.session_state:
         st.session_state.username = 'test'
             
     if 'page' not in st.session_state:
-        # st.session_state.page = 'input_name' # usernameつける時こっち
-        st.session_state.page = 'deal_data'
+        st.session_state.page = 'input_name' # usernameつける時こっち
+        # st.session_state.page = 'deal_data'
 
 
     # --- page選択ラジオボタン
     st.sidebar.markdown('## ページを選択')
-    page = st.sidebar.radio('', ('データ加工', 'データ可視化', 'テストデータ', '決定木'))
-    if page == 'データ加工':
+    page = st.sidebar.radio('', ('データ表示', 'データ可視化'))
+    if page == 'データ表示':
         st.session_state.page = 'deal_data'
         logging.info(',%s,ページ選択,%s', st.session_state.username, page)
     elif page == 'データ可視化':
         st.session_state.page = 'vis'
-        logging.info(',%s,ページ選択,%s', st.session_state.username, page)
-    elif page == 'テストデータ':
-        st.session_state.page = 'test'
-        logging.info(',%s,ページ選択,%s', st.session_state.username, page)
-    elif page == '決定木':
-        st.session_state.page = 'decision_tree'
-        logging.info(',%s,ページ選択,%s', st.session_state.username, page)
+        # logging.info(',%s,ページ選択,%s', st.session_state.username, page)
+    # elif page == 'テストデータ':
+    #     st.session_state.page = 'test'
+    #     logging.info(',%s,ページ選択,%s', st.session_state.username, page)
+    # elif page == '決定木':
+    #     st.session_state.page = 'decision_tree'
+    #     logging.info(',%s,ページ選択,%s', st.session_state.username, page)
 
     # --- page振り分け
     if st.session_state.page == 'input_name':
@@ -110,7 +110,7 @@ def input_name():
     # Input username
     with st.form("my_form"):
         inputname = st.text_input('username', 'ユーザ名')
-        submitted = st.form_submit_button("Submit")
+        submitted = st.form_submit_button("Go!!")
         if submitted: # Submit buttonn 押された時に
             if inputname == 'ユーザ名' or input_name == '': # nameが不適当なら
                 submitted = False  # Submit 取り消し
@@ -122,15 +122,27 @@ def input_name():
 
 # ---------------- 訓練データの加工 ----------------------------------
 def deal_data():
-    st.title("deal_data")
+    st.title("データの表示")
+
+    full_df = load_full_data()
+    
+
+    # highlight の ON/OFF
+    high_light = st.checkbox('最大値をハイライトする')
+    if high_light:
+        # dataframeを表示
+        st.dataframe(full_df.style.highlight_max(axis=0))
+    else:
+        st.dataframe(full_df)
+
+    ba = st.button("Let's try!!")
+    if ba:
+        st.balloons()
 
 # ---------------- テストデータ　プロット ----------------------------------
 def test():
     st.title('テストデータ')
-
-    feature_data = load_num_data()
-    full_data = load_full_data()
-    label = feature_data.columns
+    test_idx = st.number_input("データ番号を入力(0~200)", min_value=0, max_value=200)
 
     # テストデータを取得
     full_data = load_full_data()
@@ -141,8 +153,11 @@ def test():
     test = full_data[:test_num]
     train.drop('Survived', axis=1) 
     
-    test_idx = st.number_input("データ番号を入力", min_value=0, max_value=200)
-    test_df = full_data[test_idx: test_idx+1]
+    # テストデータを取得
+    test_df = full_data[test_idx: test_idx+1].drop('Survived', axis=1)
+    # 選択したデータの表示
+    st.dataframe(test_df)
+
     # 学習
     # ここでは決定木を用います
     clf = DecisionTreeClassifier(random_state=0, max_depth=3)
@@ -150,22 +165,26 @@ def test():
     train_y = train.Survived
     clf = clf.fit(train_X, train_y)
     # コンピューターの予測結果  # 1が生存、0が死亡
-    pred = clf.predict(test_df.drop('Survived', axis=1))
-    st.write('\n予測結果は...')
-    if pred[0] == 1:
-        st.write('生存！！')
-    else:
-        st.write('亡くなってしまうかも...')
+    pred = clf.predict(test_df)
 
-    ans = st.button('正解をみる')
-    if ans:
-        st.write('\n実際は...')
-        if test['Survived'][test_idx] == 1:
-            st.write('生存！！')
+    pred_btn = st.checkbox('予測結果をみる')
+    if pred_btn:
+        st.write('\n機械学習による予測結果は...')
+        if pred[0] == 1:
+            st.success('生存！！')
         else:
-            st.write('亡くなってしまった...')
+            st.success('亡くなってしまうかも...')
+        
+        # その後、正解を見る
+        ans = st.checkbox('正解をみる')
+        if ans:
+            st.write('\n実際は...')
+            if test['Survived'][test_idx] == 1:
+                st.success('生存！！')
+            else:
+                st.success('亡くなってしまった...')
 
-        test[test_idx: test_idx+1]
+            test[test_idx: test_idx+1]
 
 
 # ---------------- 決定木 : dtreeviz ----------------------------------
@@ -211,38 +230,6 @@ def decision_tree():
     tree = data.my_dtree(feature1, feature2)
     st.image(tree, caption=feature1+'_'+feature2)
 
-    # if vis_tree:
-    #     viz = dtreeviz(
-    #             clf,
-    #             train_X, 
-    #             train_y,
-    #             target_name='Survived',
-    #             feature_names=train_X.columns,
-    #             class_names=['Alive', 'Dead'],
-    #         ) 
-
-    #     viz.view()
-    # st.set_option('deprecation.showPyplotGlobalUse', False)
-
-    # viz = dtreeviz(
-    #             clf,
-    #             train_X, 
-    #             train_y,
-    #             target_name='Survived',
-    #             feature_names=train_X.columns,
-    #             class_names=['Alive', 'Dead'],
-    #         ) 
-    # st.write("viz OK")
-
-    # viz.view()
-    # st.image(viz._repr_svg_(), use_column_width=True)
-    # def st_dtree(viz, height=None):
-    #     dtree_html = f"<body>{viz.svg()}</body>"
-    #     components.html(dtree_html, height=height)
-
-    # st_dtree(viz, 800)
-    # st.write('end of code')
-    # st.image(viz._repr_svg_(), use_column_width=True)
 
 # ---------------- 可視化 :  各グラフを選択する ----------------------------------
 def vis():
@@ -257,7 +244,7 @@ def vis():
     # sidebar でグラフを選択
     graph = st.sidebar.radio(
         'グラフの種類',
-        ('棒グラフ', '棒グラフ(色分けあり)', '箱ひげ図', '散布図')
+        ('棒グラフ', '棒グラフ(男女別)', '箱ひげ図', '散布図', '全ての散布図')
     )
 
     # 棒グラフ
@@ -270,6 +257,7 @@ def vis():
 
     # 棒グラフ
     if graph == "棒グラフ":
+        logging.info(',%s,データ可視化,%s', st.session_state.username, graph)
         st.markdown('## 生存率と他の変数の関係を調べてみる')
         with st.form("棒グラフ"):
             # 変数選択
@@ -293,14 +281,15 @@ def vis():
             st.sidebar.markdown('---')
 
     # 棒グラフ: Hue あり
-    elif graph == "棒グラフ(色分けあり)":
+    elif graph == "棒グラフ(男女別)":
+        logging.info(',%s,データ可視化,%s', st.session_state.username, graph)
         label = ['Pclass', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked']
         st.markdown('## 生存率と他の変数の関係を調べてみる')
         st.write('性別ごとの分類あり')
-        with st.form("棒グラフ(色分けあり)"):
+        with st.form("棒グラフ(男女別)"):
             # 変数選択
             hist_val = st.selectbox('変数を選択',label)
-            logging.info(',%s,棒グラフ(色分けあり),%s', st.session_state.username, hist_val)
+            logging.info(',%s,棒グラフ(男女別),%s', st.session_state.username, hist_val)
 
             # Submitボタン
             plot_button = st.form_submit_button('グラフ表示')
@@ -318,6 +307,7 @@ def vis():
     
     # 箱ひげ図
     elif graph == '箱ひげ図':
+        logging.info(',%s,データ可視化,%s', st.session_state.username, graph)
         st.markdown('## 各変数の分布を箱ひげ図を用いて調べる')
         with st.form("箱ひげ図"):
             # 変数選択
@@ -341,6 +331,7 @@ def vis():
     
     # 散布図
     elif graph == '散布図':
+        logging.info(',%s,データ可視化,%s', st.session_state.username, graph)
         label = full_data.columns
         st.markdown('## 各変数の分布を散布図を用いて調べる')
         with st.form("散布図"):
@@ -371,5 +362,36 @@ def vis():
             st.sidebar.markdown('---')
             st.sidebar.write(code_txt)
             st.sidebar.markdown('---')
- 
+    
+    # 散布図行列
+    if graph == '全ての散布図':
+        logging.info(',%s,データ可視化,%s', st.session_state.username, graph)
+        label = full_data.columns
+
+        st.markdown('## 全ての変数を散布図に表示する')
+        st.markdown('このグラフの見方は、ページの一番下にある「グラフの見方」ボタン参照')
+
+        with st.form("散布図行列"):
+            # st.warning('このグラフを表示するのには、時間がかかります！！')
+            # Submitボタン
+            plot_button = st.form_submit_button('グラフ表示')
+            if plot_button:
+                # sns.pairplot(full_data, hue='Survived').savefig('./all_pairplot.png')
+                # st.pyplot(g)
+                # 処理時間が長すぎるので画像を表示
+                st.image(data.my_pairplot())
+            
+        # 散布図行列の見方を表示
+        reference_btn = st.button('グラフの見方')
+        if reference_btn:
+            st.markdown('ここにスライドの画像を表示')
+
+        # コードの表示
+        code = st.sidebar.checkbox('コードを表示')
+        if code:
+            code_txt = "g = sns.pairplot(full_data, hue='Survived')"
+            st.sidebar.markdown('---')
+            st.sidebar.write(code_txt)
+            st.sidebar.markdown('---')
+
 main()

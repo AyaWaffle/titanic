@@ -9,3 +9,8 @@ def my_dtree(feature1, feature2):
     image = Image.open(f_name)
     
     return image
+
+def my_pairplot():
+    image = Image.open('./all_pairplot.png')
+    
+    return image
