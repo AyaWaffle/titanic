@@ -5,10 +5,22 @@ import seaborn as sns
 import data
 import plotly.express as px
 
+import google_auth_httplib2
+import httplib2
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import HttpRequest
+
+import datetime
+
 ALIVE = 1
 DEAD = 0
 FEMALE = 0
 MALE = 1
+
+SCOPE = "https://www.googleapis.com/auth/spreadsheets"
+SHEET_ID = "1iNr34vpCCUHcguUyDIdH3SUNesS4mUvkgI5oiOHi9ps"
+SHEET_NAME = "titanic1_db"
 
 # Survived,Pclass,Gender,Age,SibSp,Parch,Fare,Embarked
 val_names = ["乗客のクラス(Pclass): 1が高級", "性別(Gender): 0が女性, 1が男性", "年齢(Age)", "乗船していた兄弟、配偶者の人数(SibSp)",
@@ -22,6 +34,41 @@ st.set_page_config(
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s,%(message)s")
 
+
+
+# gsheetにログを出力
+@st.experimental_singleton()
+def connect_to_gsheet():
+    # Create a connection object
+    credentials = service_account.Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"], scopes=[SCOPE]
+    )
+
+    # Create a new Http() object for every request
+    def build_request(http, *args, **kwargs):
+        new_http = google_auth_httplib2.AuthorizedHttp(
+            credentials, http=httplib2.Http()
+        )
+
+        return HttpRequest(new_http, *args, **kwargs)
+
+    authorized_http = google_auth_httplib2.AuthorizedHttp(
+        credentials, http=httplib2.Http()
+    )
+
+    service = build("sheets", "v4", requestBuilder=build_request, http=authorized_http)
+    gsheet_connector = service.spreadsheets()
+
+    return gsheet_connector
+
+
+def add_row_to_gsheet(gsheet_connector, row):
+    gsheet_connector.values().append(
+        spreadsheetId=SHEET_ID,
+        range=f"{SHEET_NAME}!A:E",
+        body=dict(values=row),
+        valueInputOption="USER_ENTERED",
+    ).execute()
 
 DATA_SOURCE = './data/titanic.csv'
 
@@ -99,6 +146,21 @@ def input_name():
             st.session_state.page = 'deal_data'
             st.write("名前: ", inputname)
             st.text("↑ 自分の学籍番号であることを確認したら、もう一度 Go! をクリック")
+
+            # ログを記録
+            add_row_to_gsheet(
+                gsheet_connector,
+                [
+                    [
+                        datetime.datetime.now(
+                            datetime.timezone(datetime.timedelta(hours=9))
+                        ).strftime("%Y-%m-%d %H:%M:%S"),
+                        "set_username",
+                        inputname,
+                        "_",
+                    ]
+                ],
+            )
 
 # ---------------- 訓練データの加工 ----------------------------------
 def deal_data():
@@ -260,4 +322,5 @@ def vis():
             st.sidebar.write(code_txt)
             st.sidebar.markdown('---')
 
+gsheet_connector = connect_to_gsheet()
 main()
