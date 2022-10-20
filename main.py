@@ -86,12 +86,14 @@ def input_name():
     # Input username
     with st.form("my_form"):
         st.text("メールアドレス b〇〇〇〇〇〇@seig-boys.jp に含まれている番号(学籍番号)を入力")
-        inputname = st.text_input('学籍番号', 'ここに学籍番号を入力')
+        inputname = st.text_input('学籍番号', placeholder='ここに学籍番号を入力')
         submitted = st.form_submit_button("Go!!")
-        if submitted: # Submit buttonn 押された時に
-            if inputname == 'ユーザ名' or input_name == '': # nameが不適当なら
-                submitted = False  # Submit 取り消し
 
+        # nameが不適当なら
+        if inputname == '': 
+            submitted = False  # Submit 取り消し
+
+        # Submit buttonn 押された時に
         if submitted:
             st.session_state.username = inputname
             st.session_state.page = 'deal_data'
