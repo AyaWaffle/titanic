@@ -90,6 +90,7 @@ soupsieve==2.3.2.post1
 stack-data==0.4.0
 statsmodels==0.13.2
 streamlit==1.12.0
+seaborn==0.11.1
 terminado==0.15.0
 tinycss2==1.1.1
 toml==0.10.2
