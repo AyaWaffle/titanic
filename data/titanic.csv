@@ -1,4 +1,4 @@
-Survived,Pclass,Sex,Age,SibSp,Parch,Fare,Embarked
+Survived,Pclass,Gender,Age,SibSp,Parch,Fare,Embarked
 死亡,3,1,22,1,0,7.25,0
 生存,1,0,38,1,0,71.2833,1
 生存,3,0,26,0,0,7.925,0
