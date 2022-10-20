@@ -158,19 +158,19 @@ def input_name():
             st.text("↑ 自分の学籍番号であることを確認したら、もう一度 Go! をクリック")
 
             # ログを記録
-            add_row_to_gsheet(
-                gsheet_connector,
-                [
-                    [
-                        datetime.datetime.now(
-                            datetime.timezone(datetime.timedelta(hours=9))
-                        ).strftime("%Y-%m-%d %H:%M:%S"),
-                        "set_username",
-                        inputname,
-                        "_",
-                    ]
-                ],
-            )
+            # add_row_to_gsheet(
+            #     gsheet_connector,
+            #     [
+            #         [
+            #             datetime.datetime.now(
+            #                 datetime.timezone(datetime.timedelta(hours=9))
+            #             ).strftime("%Y-%m-%d %H:%M:%S"),
+            #             "set_username",
+            #             inputname,
+            #             "_",
+            #         ]
+            #     ],
+            # )
 
 
 # ---------------- 訓練データの加工 ----------------------------------
@@ -244,6 +244,21 @@ def vis():
             hist_val = st.selectbox("変数を選択", val_names)
             hist_val = data.get_val(hist_val)
             logging.info(",%s,ヒストグラム,%s", st.session_state.username, hist_val)
+
+            # ログを記録
+            add_row_to_gsheet(
+                gsheet_connector,
+                [
+                    [
+                        datetime.datetime.now(
+                            datetime.timezone(datetime.timedelta(hours=9))
+                        ).strftime("%Y-%m-%d %H:%M:%S"),
+                        "ヒストグラム ",
+                        hist_val,
+                        "-",
+                    ]
+                ],
+            )
 
             # Submitボタン
             plot_button = st.form_submit_button("グラフ表示")
