@@ -245,25 +245,25 @@ def vis():
             hist_val = data.get_val(hist_val)
             logging.info(",%s,ヒストグラム,%s", st.session_state.username, hist_val)
 
-            # ログを記録
-            # add_row_to_gsheet(
-            #     gsheet_connector,
-            #     [
-            #         [
-            #             datetime.datetime.now(
-            #                 datetime.timezone(datetime.timedelta(hours=9))
-            #             ).strftime("%Y-%m-%d %H:%M:%S"),
-            #             "ヒストグラム ",
-            #             hist_val,
-            #             "-",
-            #         ]
-            #     ],
-            # )
-
             # Submitボタン
             plot_button = st.form_submit_button("グラフ表示")
 
             if plot_button:
+                # ログを記録
+                # add_row_to_gsheet(
+                #     gsheet_connector,
+                #     [
+                #         [
+                #             # datetime.datetime.now(
+                #             #     datetime.timezone(datetime.timedelta(hours=9))
+                #             # ).strftime("%Y-%m-%d %H:%M:%S"),
+                #             "dummy",
+                #             "ヒストグラム ",
+                #             "hist_val",
+                #             "-",
+                #         ]
+                #     ],
+                # )
                 if hist_val == "Fare":
                     g = px.histogram(
                         full_data,
